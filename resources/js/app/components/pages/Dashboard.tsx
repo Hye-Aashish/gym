@@ -35,10 +35,46 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
+  const [gymName, setGymName] = useState("Fitness Point");
+  const [currency, setCurrency] = useState("₹");
 
   useEffect(() => {
     fetchDashboardStats();
+    fetchGymName();
+    fetchSettings();
+
+    const handleSettingsUpdate = (event: any) => {
+      if (event.detail) {
+        if (event.detail.gym_name) setGymName(event.detail.gym_name);
+        if (event.detail.currency) {
+          const symbol = event.detail.currency.match(/\((.*)\)/)?.[1] || "₹";
+          setCurrency(symbol);
+        }
+      }
+    };
+
+    window.addEventListener('settingsUpdated', handleSettingsUpdate);
+    return () => window.removeEventListener('settingsUpdated', handleSettingsUpdate);
   }, []);
+
+  const fetchGymName = async () => {
+    try {
+      const response = await axios.get("/api/settings");
+      if (response.data && response.data.gym_name) {
+        setGymName(response.data.gym_name);
+      }
+    } catch (error) {}
+  };
+
+  const fetchSettings = async () => {
+    try {
+      const response = await axios.get("/api/settings");
+      if (response.data && response.data.currency) {
+        const symbol = response.data.currency.match(/\((.*)\)/)?.[1] || "₹";
+        setCurrency(symbol);
+      }
+    } catch (error) {}
+  };
 
   const fetchDashboardStats = async () => {
     try {
@@ -87,7 +123,7 @@ export function Dashboard() {
 
   const kpiStats = [
     { label: "Total Members", value: stats?.total_members || 0, change: "Active: " + (stats?.active_members || 0), icon: Users, color: "indigo" },
-    { label: "Revenue", value: "₹" + (stats?.monthly_revenue || 0).toLocaleString('en-IN'), change: "This Month", icon: IndianRupee, color: "emerald" },
+    { label: "Revenue", value: currency + (stats?.monthly_revenue || 0).toLocaleString('en-IN'), change: "This Month", icon: IndianRupee, color: "emerald" },
     { label: "Attendance", value: stats?.today_attendance || 0, change: "Check-ins Today", icon: CalendarCheck, color: "blue" },
     { label: "New Leads", value: stats?.total_leads || 0, change: "Prospects", icon: MessageSquare, color: "amber" },
   ];
@@ -96,7 +132,7 @@ export function Dashboard() {
     <div className="space-y-8 animate-in fade-in duration-700 no-scrollbar max-w-7xl mx-auto font-sans">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6 text-left">
         <div>
-          <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">Overview 👋</h1>
+          <h1 className="text-3xl md:text-4xl font-extrabold text-slate-900 tracking-tight">{gymName} Overview 👋</h1>
           <p className="mt-1.5 text-[15px] font-medium text-slate-500 max-w-lg leading-relaxed">Real-time snapshots of your gym's performance.</p>
         </div>
         <div className="flex gap-3">
@@ -167,6 +203,7 @@ export function Dashboard() {
                   <Tooltip 
                     contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }}
                     itemStyle={{ fontWeight: 800, fontSize: '14px', color: '#6366f1' }}
+                    formatter={(value) => [`${currency}${value}`, 'Revenue']}
                   />
                   <Area type="monotone" dataKey="total" stroke="#6366f1" strokeWidth={4} fillOpacity={1} fill="url(#revenue)" />
                 </AreaChart>
@@ -294,7 +331,7 @@ export function Dashboard() {
                    </div>
                  ))}
                </div>
-               <span className="text-[9px] font-black text-slate-700 uppercase tracking-[4px]">Fitness Point 2.0</span>
+               <span className="text-[9px] font-black text-slate-700 uppercase tracking-[4px]">{gymName} 2.0</span>
             </div>
           </div>
         </div>

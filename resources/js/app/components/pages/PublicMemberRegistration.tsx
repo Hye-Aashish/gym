@@ -10,10 +10,21 @@ export function PublicMemberRegistration() {
   const [isSuccess, setIsSuccess] = useState(false);
   const [fields, setFields] = useState([]);
   const [formData, setFormData] = useState({});
+  const [gymName, setGymName] = useState("Fitness Point");
 
   useEffect(() => {
     fetchConfig();
+    fetchGymName();
   }, []);
+
+  const fetchGymName = async () => {
+    try {
+      const response = await axios.get("/api/settings");
+      if (response.data && response.data.gym_name) {
+        setGymName(response.data.gym_name);
+      }
+    } catch (error) {}
+  };
 
   const fetchConfig = async () => {
     try {
@@ -71,7 +82,7 @@ export function PublicMemberRegistration() {
           </div>
           <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Registration Complete!</h2>
           <p className="mt-4 text-[16px] font-medium text-slate-500 leading-relaxed">
-            Thank you for registering with Fitness Point. Your profile has been created. Our team will contact you soon to finalize your membership plan.
+            Thank you for registering with <b>{gymName}</b>. Your profile has been created. Our team will contact you soon to finalize your membership plan.
           </p>
           <div className="mt-10 pt-8 border-t border-slate-100">
             <p className="text-sm font-bold text-slate-400 uppercase tracking-widest">Welcome to the family</p>
@@ -88,7 +99,7 @@ export function PublicMemberRegistration() {
           <div className="h-12 w-12 bg-indigo-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-indigo-100">
             <CheckCircle2 className="h-7 w-7" />
           </div>
-          <span className="text-2xl font-black text-slate-900 tracking-tighter italic uppercase">FITNESS <span className="text-indigo-600">POINT</span></span>
+          <span className="text-2xl font-black text-slate-900 tracking-tighter uppercase">{gymName}</span>
         </div>
 
         <div className="bg-white rounded-[40px] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-slate-100/50 overflow-hidden">
@@ -155,7 +166,7 @@ export function PublicMemberRegistration() {
         </div>
 
         <p className="mt-10 text-center text-[13px] font-bold text-slate-400 uppercase tracking-widest">
-          Powered by Fitness Point OS
+          Powered by {gymName} OS
         </p>
       </div>
     </div>

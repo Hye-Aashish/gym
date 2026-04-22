@@ -22,10 +22,23 @@ export function Expenses() {
     notes: ""
   });
 
+  const [currency, setCurrency] = useState("₹");
+
   useEffect(() => {
     fetchExpenses();
     fetchSummary();
+    fetchSettings();
   }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const response = await axios.get("/api/settings");
+      if (response.data && response.data.currency) {
+        const symbol = response.data.currency.match(/\((.*)\)/)?.[1] || "₹";
+        setCurrency(symbol);
+      }
+    } catch (error) {}
+  };
 
   const fetchExpenses = async () => {
     try {
@@ -112,7 +125,7 @@ export function Expenses() {
             <div className="ml-6 flex-1 text-left">
               <p className="text-[14px] font-bold text-slate-400 uppercase tracking-widest">Monthly Spending</p>
               <div className="mt-1 flex items-baseline">
-                <span className="text-3xl font-extrabold text-slate-900 tracking-tight">₹{summary.monthly_total.toLocaleString('en-IN')}</span>
+                <span className="text-3xl font-extrabold text-slate-900 tracking-tight">{currency}{summary.monthly_total.toLocaleString('en-IN')}</span>
                 <span className="ml-2 text-xs font-bold text-rose-500 bg-rose-50 px-2 py-0.5 rounded-lg border border-rose-100">APRIL '24</span>
               </div>
             </div>
@@ -194,7 +207,7 @@ export function Expenses() {
                       <div className="text-[13px] font-bold text-slate-700 bg-slate-100/50 inline-flex px-3.5 py-1.5 rounded-xl border border-slate-200/50 uppercase tracking-tight">{expense.category}</div>
                     </td>
                     <td className="px-7 py-5 whitespace-nowrap">
-                      <div className="text-[15px] font-extrabold text-rose-600 tracking-tight">₹{parseFloat(expense.amount).toLocaleString()}</div>
+                      <div className="text-[15px] font-extrabold text-rose-600 tracking-tight">{currency}{parseFloat(expense.amount).toLocaleString()}</div>
                     </td>
                     <td className="px-7 py-5 whitespace-nowrap text-[13px] font-bold text-slate-500 hidden md:table-cell">
                       <div className="flex items-center text-slate-600">
@@ -263,7 +276,7 @@ export function Expenses() {
 
                 {/* Amount */}
                 <div className="space-y-2">
-                  <label className="text-[14px] font-bold text-slate-700 ml-1">Amount (₹)</label>
+                  <label className="text-[14px] font-bold text-slate-700 ml-1">Amount ({currency})</label>
                   <div className="relative group">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                       <Wallet className="h-5 w-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />

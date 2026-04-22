@@ -38,4 +38,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('invoices', InvoiceController::class);
     
     Route::post('/form-config', [\App\Http\Controllers\FormConfigController::class, 'update']);
+
+    Route::get('/settings', [\App\Http\Controllers\SystemSettingController::class, 'index']);
+    Route::post('/settings', [\App\Http\Controllers\SystemSettingController::class, 'update']);
 });

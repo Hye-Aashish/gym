@@ -15,12 +15,13 @@ export function Members() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [activeTab, setActiveTab] = useState("All Members");
   const [planFilter, setPlanFilter] = useState("All Plans");
+  const [plans, setPlans] = useState([]);
 
   const [newMember, setNewMember] = useState({
     name: "",
     email: "",
     phone: "+91 ",
-    plan: "Pro Monthly",
+    plan: "",
     status: "Active",
     join_date: new Date().toISOString().split('T')[0],
     expire_date: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0],
@@ -49,7 +50,20 @@ export function Members() {
 
   useEffect(() => {
     fetchMembers();
+    fetchPlans();
   }, []);
+
+  const fetchPlans = async () => {
+    try {
+      const response = await axios.get("/api/plans");
+      setPlans(response.data);
+      if (response.data.length > 0) {
+        setNewMember(prev => ({ ...prev, plan: response.data[0].name }));
+      }
+    } catch (error) {
+      console.error("Error fetching plans:", error);
+    }
+  };
 
   const fetchMembers = async () => {
     try {
@@ -74,7 +88,7 @@ export function Members() {
         name: "",
         email: "",
         phone: "+91 ",
-        plan: "Pro Monthly",
+        plan: plans.length > 0 ? plans[0].name : "",
         status: "Active",
         join_date: new Date().toISOString().split('T')[0],
         expire_date: new Date(new Date().setMonth(new Date().getMonth() + 1)).toISOString().split('T')[0],
@@ -212,9 +226,9 @@ export function Members() {
               className="w-full sm:w-48 px-4 py-3 bg-slate-50 border border-slate-100 rounded-2xl focus:outline-none focus:border-indigo-500 focus:bg-white transition-all text-sm font-bold text-slate-600 appearance-none cursor-pointer"
             >
               <option>All Plans</option>
-              <option>Basic Monthly</option>
-              <option>Pro Monthly</option>
-              <option>Elite Yearly</option>
+              {plans.map(plan => (
+                <option key={plan.id} value={plan.name}>{plan.name}</option>
+              ))}
               <option>Pending Assignment</option>
             </select>
           </div>
@@ -376,9 +390,10 @@ export function Members() {
                       onChange={(e) => setNewMember({...newMember, plan: e.target.value})}
                       className="block w-full px-5 py-4 border border-slate-200 rounded-2xl bg-slate-50 focus:bg-white focus:outline-none focus:border-indigo-500 transition-all text-sm font-bold text-slate-600 appearance-none"
                     >
-                      <option>Basic Monthly</option>
-                      <option>Pro Monthly</option>
-                      <option>Elite Yearly</option>
+                      {plans.map(plan => (
+                        <option key={plan.id} value={plan.name}>{plan.name}</option>
+                      ))}
+                      {plans.length === 0 && <option disabled>No plans available</option>}
                     </select>
                   </div>
                 </div>
@@ -465,9 +480,9 @@ export function Members() {
                       onChange={(e) => setEditingMember({...editingMember, plan: e.target.value})}
                       className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl appearance-none font-bold text-slate-700"
                     >
-                      <option>Basic Monthly</option>
-                      <option>Pro Monthly</option>
-                      <option>Elite Yearly</option>
+                      {plans.map(plan => (
+                        <option key={plan.id} value={plan.name}>{plan.name}</option>
+                      ))}
                       <option>Pending Assignment</option>
                     </select>
                   </div>

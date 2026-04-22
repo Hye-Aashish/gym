@@ -1,18 +1,44 @@
+import { useState, useEffect } from "react";
 import { Dumbbell, Bell, Search, Command } from "lucide-react";
 import { Link } from "react-router";
+import axios from "axios";
 
 export function TopBar() {
+  const [gymName, setGymName] = useState("Fitness Point");
+
+  useEffect(() => {
+    fetchGymName();
+
+    const handleSettingsUpdate = (event: any) => {
+      if (event.detail && event.detail.gym_name) {
+        setGymName(event.detail.gym_name);
+      }
+    };
+
+    window.addEventListener('settingsUpdated', handleSettingsUpdate);
+    return () => window.removeEventListener('settingsUpdated', handleSettingsUpdate);
+  }, []);
+
+  const fetchGymName = async () => {
+    try {
+      const response = await axios.get("/api/settings");
+      if (response.data && response.data.gym_name) {
+        setGymName(response.data.gym_name);
+      }
+    } catch (error) {}
+  };
+
   return (
     <header className="sticky top-0 z-40 bg-white/70 backdrop-blur-xl border-b border-slate-200/60 shadow-[0_4px_32px_-16px_rgba(0,0,0,0.05)] h-[72px] flex items-center justify-between px-6 md:px-8 shrink-0 transition-all duration-300">
       <Link to="/" className="flex items-center md:hidden">
         <div className="h-9 w-9 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-xl flex items-center justify-center mr-3 shadow-sm shadow-indigo-200/50">
           <Dumbbell className="size-[22px] text-white transform -rotate-12" />
         </div>
-        <span className="text-xl font-bold tracking-tight text-slate-900 font-sans">Fitness Point</span>
+        <span className="text-xl font-bold tracking-tight text-slate-900 font-sans">{gymName}</span>
       </Link>
       
       {/* Search on desktop */}
-      <div className="hidden md:flex flex-1 items-center max-w-xl">
+      <div className="hidden md:flex flex-1 items-center max-w-xl text-left">
         <div className="relative w-full group">
           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
             <Search className="h-5 w-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors duration-200" />

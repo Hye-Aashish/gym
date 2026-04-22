@@ -20,11 +20,24 @@ export function Billing() {
     status: "Pending",
     due_date: new Date().toISOString().split('T')[0],
   });
+  const [currency, setCurrency] = useState("₹");
 
   useEffect(() => {
     fetchInvoices();
     fetchMembers();
+    fetchSettings();
   }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const response = await axios.get("/api/settings");
+      if (response.data && response.data.currency) {
+        // Extract symbol from "INR (₹)" or use as is
+        const symbol = response.data.currency.match(/\((.*)\)/)?.[1] || "₹";
+        setCurrency(symbol);
+      }
+    } catch (error) {}
+  };
 
   const fetchInvoices = async () => {
     try {
@@ -118,11 +131,11 @@ export function Billing() {
             <tbody>
               <tr>
                 <td>Gym Membership / Subscription Fee</td>
-                <td style="text-align: right; font-weight: bold;">₹${parseFloat(invoice.amount).toLocaleString('en-IN')}</td>
+                <td style="text-align: right; font-weight: bold;">${currency}${parseFloat(invoice.amount).toLocaleString('en-IN')}</td>
               </tr>
             </tbody>
           </table>
-          <div class="total">Total: ₹${parseFloat(invoice.amount).toLocaleString('en-IN')}</div>
+          <div class="total">Total: ${currency}${parseFloat(invoice.amount).toLocaleString('en-IN')}</div>
           <div class="footer">
             <p>Thank you for your business!</p>
             <p>This is a computer generated invoice and does not require a signature.</p>
@@ -252,7 +265,7 @@ export function Billing() {
                       <div className="text-[14px] font-bold text-slate-900 uppercase">{invoice.member?.name || 'Unknown Member'}</div>
                     </td>
                     <td className="px-7 py-5 whitespace-nowrap">
-                      <div className="text-[15px] font-extrabold text-slate-900 tracking-tight">₹{parseFloat(invoice.amount).toLocaleString('en-IN')}</div>
+                      <div className="text-[15px] font-extrabold text-slate-900 tracking-tight">{currency}{parseFloat(invoice.amount).toLocaleString('en-IN')}</div>
                     </td>
                     <td className="px-7 py-5 whitespace-nowrap">
                       <span className={clsx(
